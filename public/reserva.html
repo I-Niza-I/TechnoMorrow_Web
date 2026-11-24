@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva</title>
+
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./script.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>aaa</h1>
+    </header>
+    <main>
+        <Section>
+            <form id="form-tiempo" class="fade-panel">
+                <article>
+                    <input class="radio-tarjeta" type="radio" id="tiempo1" name="tiempo" value="30">
+                    <label class="eleccion_tiempo_reserva" for="tiempo1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-device-mobile">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M6 5a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-14" />
+                            <path d="M11 4h2" />
+                            <path d="M12 17v.01" />
+                        </svg>
+
+                        <span class="descripcion-tarjeta">
+                            30 minutos de carga para dispositivos móviles
+                        </span>
+                    </label>
+                </article>
+                    
+
+                <article>
+                    <input class="radio-tarjeta" type="radio" id="tiempo2" name="tiempo" value="45">
+                    <label class="eleccion_tiempo_reserva" for="tiempo2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-device-ipad">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M18 3a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2l12 0" />
+                            <path d="M9 18h6" />
+                        </svg>
+
+                        <span class="descripcion-tarjeta">
+                            45 minutos de carga para Tablets/Ipads
+                        </span>
+                    </label>
+                </article>
+
+
+                <article>
+                    
+                    <input class="radio-tarjeta" type="radio" id="tiempo3" name="tiempo" value="60">
+                    <label class="eleccion_tiempo_reserva" for="tiempo3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"                   stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-device-laptop">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M3 19l18 0" />
+                            <path d="M5 7a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1l0 -8" />
+                        </svg>
+
+                        <span class="descripcion-tarjeta">
+                            60 minutos de carga para Computadoras
+                        </span>
+                    </label>
+                </article>
+
+                <button class="boton-enviar" type="submit">Confirmar reserva</button>
+
+            </form>
+
+            <section id="identificacion" class="panel-identificacion fade-panel" hidden>
+                <h2>Identifica tu enchufe</h2>
+                <p id="instruccion-metodo"></p>
+
+                <p class="cuenta-regresiva">
+                    Tiempo restante: <strong id="temporizador">02:00</strong>
+                </p>
+
+                <div id="panel-codigo">
+                    <label for="codigo-enchufe">Código único del enchufe</label>
+                    <input
+                        id="codigo-enchufe"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Ejemplo: ENCHUFE-001"
+                    >
+                    <button id="confirmar-codigo" class="boton-enviar" type="button">
+                        Confirmar código
+                    </button>
+                </div>
+
+                <div id="panel-qr" hidden>
+                    <button id="abrir-camara" class="boton-enviar" type="button">
+                        Abrir cámara y escanear QR
+                    </button>
+
+                    <video id="vista-camara" playsinline muted hidden></video>
+                    <p id="mensaje-camara" role="status"></p>
+                </div>
+
+                <button id="cambiar-metodo" class="boton-cambiar" type="button"></button>
+                <p id="mensaje-reserva" role="status"></p>
+            </section>
+
+            <footer>
+                <small>&copy; 2026 TechnoMorrow. Todos los derechos reservados</small>
+            </footer>
+        </Section>
+    </main>
+</body>
+</html>
