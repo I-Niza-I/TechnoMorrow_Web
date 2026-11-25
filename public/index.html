@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reserva de carga</title>
     <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./inicio-acceso.css">
+    <script type="module" src="./inicio.js"></script>
 </head>
 <body>
     <header class="encabezado-inicio">
@@ -28,15 +30,19 @@
                 <li>Confirma la reserva y conecta tu dispositivo.</li>
             </ol>
 
-            <a class="boton-enviar boton-inicio" href="./reserva.html">
-                Comenzar reserva
-            </a>
+            <form id="form-identificar" class="form-codigo-inicio">
+                <label for="codigo-inicial">Código del tótem</label>
+                <div class="input-code-group"><input id="codigo-inicial" type="text" placeholder="Ejemplo: TOT-001" autocapitalize="characters" autocomplete="off" required maxlength="45"><button type="submit" class="boton-enviar">Continuar <span aria-hidden="true">→</span></button></div>
+            </form>
+            <div class="separador-inicio"><span>o identifica el tótem con su QR</span></div>
+            <button type="button" id="escanear-inicio" class="boton-qr-inicio">▦ &nbsp; Escanear código QR</button>
+            <video id="camara-inicio" playsinline muted hidden></video>
+            <p id="inicio-mensaje" class="inicio-mensaje" role="status" aria-live="polite"></p>
 
             <a class="enlace-panel-demo" href="./estadisticas.html">Ver estadísticas (demostración) ↗</a>
 
             <p class="nota-inicio">
-                ¿Estás junto a un enchufe? Escanea su QR con la cámara del
-                celular para ir directamente a la selección de tiempo.
+                Identifica primero el tótem. Luego inicia sesión y selecciona el tiempo de reserva. Para confirmar, deberás leer o ingresar su código nuevamente.
             </p>
         </section>
     </main>

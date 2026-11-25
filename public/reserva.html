@@ -6,13 +6,17 @@
     <title>Reserva</title>
 
     <link rel="stylesheet" href="./styles.css" />
-    <script src="./script.js" defer></script>
+    <script type="module" src="./script.js"></script>
 </head>
 <body>
     <header>
-        <h1>aaa</h1>
+        <h1>Reserva de carga</h1>
     </header>
     <main>
+      <div id="verificando-sesion" class="aviso-reserva" role="status">Verificando la sesión de Firebase…</div>
+      <div id="panel-reserva" hidden>
+        <div class="reserva-identidad"><div><small>TÓTEM IDENTIFICADO</small><strong id="totem-codigo-inicial">—</strong></div><button id="cerrar-sesion" type="button" class="boton-cambiar">Cerrar sesión</button></div>
+        <p class="explicacion-reserva">Selecciona un tiempo. Para confirmar deberás escanear o ingresar <strong>nuevamente el código del mismo tótem</strong>.</p>
         <Section>
             <form id="form-tiempo" class="fade-panel">
                 <article>
@@ -64,12 +68,12 @@
                     </label>
                 </article>
 
-                <button class="boton-enviar" type="submit">Confirmar reserva</button>
+                <button class="boton-enviar" type="submit">Continuar a confirmación</button>
 
             </form>
 
             <section id="identificacion" class="panel-identificacion fade-panel" hidden>
-                <h2>Identifica tu enchufe</h2>
+                <h2>Confirma el tótem</h2>
                 <p id="instruccion-metodo"></p>
 
                 <p class="cuenta-regresiva">
@@ -77,12 +81,12 @@
                 </p>
 
                 <div id="panel-codigo">
-                    <label for="codigo-enchufe">Código único del enchufe</label>
+                    <label for="codigo-enchufe">Vuelve a ingresar el código del tótem</label>
                     <input
                         id="codigo-enchufe"
                         type="text"
                         autocomplete="off"
-                        placeholder="Ejemplo: ENCHUFE-001"
+                        placeholder="Ejemplo: TOT-001"
                     >
                     <button id="confirmar-codigo" class="boton-enviar" type="button">
                         Confirmar código
@@ -102,6 +106,7 @@
                 <p id="mensaje-reserva" role="status"></p>
             </section>
 
+      </div>
             <footer>
                 <small>&copy; 2026 TechnoMorrow. Todos los derechos reservados</small>
             </footer>
