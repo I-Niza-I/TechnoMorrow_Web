@@ -1,6 +1,7 @@
 import { auth, firebaseConfigurado } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js';
 import { extraerCodigoTotem, codigoDesdeURL, urlConCodigo, iniciarEscaner } from './totem-utils.js';
+import { obtenerRolUsuario, mensajeErrorPerfil } from './roles.js';
 
 const codigoInicial=codigoDesdeURL();
 const espera=document.getElementById('verificando-sesion');
@@ -17,10 +18,21 @@ let metodo='codigo';
 // Nunca mostrar o aceptar reservas sin sesión verificada.
 if(!codigoInicial) window.location.replace('./index.html');
 else if(!firebaseConfigurado){espera.textContent='Completa firebase-config.js antes de iniciar sesión y reservar.';}
-else onAuthStateChanged(auth,usuario=>{
+else onAuthStateChanged(auth,async usuario=>{
   if(!usuario) {window.location.replace(urlConCodigo('login.html',codigoInicial));return;}
-  espera.hidden=true;panel.hidden=false;
-  document.getElementById('totem-codigo-inicial').textContent=codigoInicial;
+  try {
+    const rol = await obtenerRolUsuario(usuario);
+    if(rol === 'admin') {
+      window.location.replace('./estadisticas.html');
+      return;
+    }
+    espera.hidden=true;panel.hidden=false;
+    document.getElementById('totem-codigo-inicial').textContent=codigoInicial;
+  } catch(error) {
+    console.error('No se pudo comprobar el rol para reservar:',error);
+    espera.textContent=mensajeErrorPerfil(error);
+    panel.hidden=true;
+  }
 });
 
 document.getElementById('cerrar-sesion').addEventListener('click',async()=>{

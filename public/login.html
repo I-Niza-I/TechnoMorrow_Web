@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#042121">
-  <meta name="description" content="Inicia sesión para reservar un tótem de carga TechnoMorrow.">
+  <meta name="description" content="Inicia sesión en TechnoMorrow para reservar o administrar los tótems.">
   <title>Iniciar sesión | TechnoMorrow</title>
   <link rel="stylesheet" href="./login.css">
   <script type="module" src="./login.js"></script>
@@ -14,9 +14,9 @@
     <aside class="feature-pane">
       <div class="brand"><div class="brand-mark">T<span>↯</span></div><div class="brand-text">Techno<span>Morrow</span><small>CONTROL DE CARGA</small></div></div>
       <div class="feature-body">
-        <div class="eyebrow"><span class="dot"></span> ACCESO A RESERVAS</div>
+        <div class="eyebrow"><span class="dot"></span> ACCESO A TECHNOMORROW</div>
         <h1>Tu energía,<br><span>cuando la necesitas.</span></h1>
-        <p>Identifícate para continuar con tu reserva y acceder a un punto de carga dentro del laboratorio.</p>
+        <p>Identifícate para reservar un tótem o acceder al panel de estadísticas según los permisos de tu cuenta.</p>
         <div class="steps-graphic" aria-label="Pasos de la reserva">
           <div class="step completed"><span class="number">01</span><div><strong>Identificar tótem</strong><small>QR o código único</small></div><span class="step-check">✓</span></div>
           <div class="step current"><span class="number">02</span><div><strong>Iniciar sesión</strong><small>Verificación de identidad</small></div><span class="step-bubble"></span></div>
@@ -29,7 +29,7 @@
       <div class="form-inner">
         <a class="back-link" href="./index.html"><span aria-hidden="true">←</span> Volver al inicio</a>
         <div class="mobile-brand">Techno<span>Morrow</span></div>
-        <div class="login-heading"><span class="overline">PASO 02 / 03</span><h2>Bienvenido de nuevo</h2><p>Ingresa tus credenciales para continuar con la reserva.</p></div>
+        <div class="login-heading"><span class="overline">PASO 02 / 03</span><h2>Bienvenido de nuevo</h2><p>Ingresa tus credenciales. Tu perfil determinará si accedes a las reservas o al panel administrativo.</p></div>
         <div class="code-context" id="code-context" aria-live="polite">
           <div class="code-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 3h14v6H5zM5 15h14v6H5zM9 9v6M15 9v6"/></svg></div>
           <div><small>TÓTEM IDENTIFICADO</small><strong id="codigo-seleccionado">Cargando…</strong></div>
@@ -41,7 +41,7 @@
           <div class="field-wrap"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><input id="login-email" name="email" type="email" placeholder="correo@ejemplo.com" autocomplete="username" required maxlength="254"></div>
           <div class="label-row"><label for="login-password">Contraseña</label></div>
           <div class="field-wrap"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="login-password" name="password" type="password" placeholder="Ingresa tu contraseña" autocomplete="current-password" required><button type="button" class="toggle-pass" id="toggle-pass" aria-label="Mostrar contraseña" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
-          <button class="submit" id="login-submit" type="submit"><span id="login-submit-text">Iniciar sesión y continuar</span><span aria-hidden="true" class="arrow">→</span></button>
+          <button class="submit" id="login-submit" type="submit"><span id="login-submit-text">Iniciar sesión</span><span aria-hidden="true" class="arrow">→</span></button>
         </form>
         <p class="help-text">Usa una de las cuentas de prueba que creaste en <strong>Firebase Authentication</strong>. Esta página no crea usuarios nuevos.</p>
         <div class="secure-row"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg><span>Inicio de sesión protegido por Firebase Authentication</span></div>

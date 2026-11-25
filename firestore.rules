@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function autenticado() {
+      return request.auth != null;
+    }
+    function administrador() {
+      return autenticado()
+        && exists(/databases/$(database)/documents/usuario/$(request.auth.uid))
+        && get(/databases/$(database)/documents/usuario/$(request.auth.uid)).data.rol in ['admin', 'administrador']
+        && get(/databases/$(database)/documents/usuario/$(request.auth.uid)).data.estado == 'activo';
+    }
+
+    match /usuario/{uid} {
+      allow get: if autenticado() && request.auth.uid == uid || administrador();
+      allow list: if administrador();
+      allow create, update, delete: if false;
+    }
+
+    // Por ahora: el administrador puede leer datos para el futuro panel.
+    // El frontend no puede cambiar ni reservas ni el estado de los relés.
+    match /{documento=**} {
+      allow read: if administrador();
+      allow write: if false;
+    }
+  }
+}

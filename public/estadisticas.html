@@ -7,10 +7,23 @@
   <meta name="description" content="Panel de estadísticas de los tótems de carga TechnoMorrow.">
   <title>Panel de estadísticas | TechnoMorrow</title>
   <link rel="stylesheet" href="./estadisticas.css">
+  <style>
+    html:not(.admin-autorizado) .app-layout { display: none !important; }
+    html.admin-autorizado #admin-acceso { display: none !important; }
+    #admin-acceso { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:28px; background:#042121; color:#f0fff5; font-family:system-ui, sans-serif; text-align:center; }
+    #admin-acceso p { color:#cbd5e1; max-width:520px; }
+    #admin-acceso a { color:#4de356; text-decoration:underline; }
+  </style>
+  <script type="module" src="./admin-guard.js"></script>
   <script src="./estadisticas-datos.js" defer></script>
   <script src="./estadisticas.js" defer></script>
 </head>
 <body>
+  <div id="admin-acceso" role="status" aria-live="polite">
+    <strong>Verificando acceso al panel…</strong>
+    <p id="admin-acceso-mensaje">Consultando el rol de tu cuenta en Firebase.</p>
+    <a href="./login.html">Volver al inicio de sesión</a>
+  </div>
   <!-- Iconos SVG integrados, sin recursos externos. -->
   <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <symbol id="ic-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></symbol>
@@ -54,7 +67,7 @@
       </nav>
       <div class="sidebar-bottom">
         <div class="mini-status"><span class="status-pulse"></span><span><strong>Panel de análisis</strong><small id="sidebar-source">Origen: datos de ejemplo</small></span></div>
-        <a href="./index.html" class="back-link"><svg class="ic"><use href="#ic-logout"></use></svg> Volver al inicio</a>
+        <a href="./login.html" id="cerrar-sesion-admin" class="back-link"><svg class="ic"><use href="#ic-logout"></use></svg> Cerrar sesión</a>
         <span class="sidebar-copyright">© 2026 TechnoMorrow</span>
       </div>
     </aside>
