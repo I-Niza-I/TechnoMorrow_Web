@@ -5,7 +5,7 @@
     "control": {
       "$codigo": {
         ".read": "($codigo == 'TOT-001' || $codigo == 'TOT-002') && auth != null && (root.child('permisos/reservadores').child(auth.uid).val() == true || root.child('permisos/dispositivos').child($codigo).val() == auth.uid)",
-        ".write": "($codigo == 'TOT-001' || $codigo == 'TOT-002') && auth != null && newData.exists() && ((root.child('permisos/reservadores').child(auth.uid).val() == true && data.child('estado').val() == 'libre' && newData.child('estado').val() == 'pendiente' && newData.child('id').val() != 'inicio' && newData.child('vence').val() >= now + 25000 && newData.child('vence').val() <= now + 31000) || (root.child('permisos/dispositivos').child($codigo).val() == auth.uid && ((data.child('estado').val() == 'pendiente' && data.child('vence').val() > now && newData.child('estado').val() == 'activo' && newData.child('id').val() == data.child('id').val() && newData.child('segundos').val() == data.child('segundos').val() && newData.child('vence').val() >= now + newData.child('segundos').val() * 1000 - 5000 && newData.child('vence').val() <= now + newData.child('segundos').val() * 1000 + 1000) || ((data.child('estado').val() == 'pendiente' || data.child('estado').val() == 'activo') && data.child('vence').val() <= now && newData.child('estado').val() == 'libre' && newData.child('id').val() == 'inicio' && newData.child('segundos').val() == 0 && newData.child('vence').val() == 0))))",
+        ".write": "($codigo == 'TOT-001' || $codigo == 'TOT-002') && auth != null && newData.exists() && ((root.child('permisos/reservadores').child(auth.uid).val() == true && data.child('estado').val() == 'libre' && newData.child('estado').val() == 'pendiente' && newData.child('id').isString() && newData.child('id').val().matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/) && root.child('solicitudes').child(newData.child('id').val()).child('uid').val() == auth.uid && root.child('solicitudes').child(newData.child('id').val()).child('codigo').val() == $codigo && root.child('solicitudes').child(newData.child('id').val()).child('segundos').val() == newData.child('segundos').val() && root.child('solicitudes').child(newData.child('id').val()).child('vence').val() == newData.child('vence').val() && newData.child('vence').val() >= now + 25000 && newData.child('vence').val() <= now + 31000) || (root.child('permisos/dispositivos').child($codigo).val() == auth.uid && ((data.child('estado').val() == 'pendiente' && data.child('vence').val() > now && newData.child('estado').val() == 'activo' && newData.child('id').val() == data.child('id').val() && newData.child('segundos').val() == data.child('segundos').val() && newData.child('vence').val() >= now + newData.child('segundos').val() * 1000 - 5000 && newData.child('vence').val() <= now + newData.child('segundos').val() * 1000 + 1000) || ((data.child('estado').val() == 'pendiente' || data.child('estado').val() == 'activo') && data.child('vence').val() <= now && newData.child('estado').val() == 'libre' && newData.child('id').val() == 'inicio' && newData.child('segundos').val() == 0 && newData.child('vence').val() == 0))))",
         ".validate": "newData.hasChildren(['estado','id','segundos','vence']) && ((newData.child('estado').val() == 'libre' && newData.child('id').val() == 'inicio' && newData.child('segundos').val() == 0 && newData.child('vence').val() == 0) || ((newData.child('estado').val() == 'pendiente' || newData.child('estado').val() == 'activo') && (newData.child('segundos').val() == 30 || newData.child('segundos').val() == 45 || newData.child('segundos').val() == 60) && newData.child('vence').val() > 0 && newData.child('id').val() != 'inicio'))",
         "estado": {
           ".validate": "newData.isString()"
@@ -18,6 +18,28 @@
         },
         "vence": {
           ".validate": "newData.isNumber()"
+        },
+        "$otro": {
+          ".validate": false
+        }
+      }
+    },
+    "solicitudes": {
+      "$id": {
+        ".read": false,
+        ".write": "auth != null && root.child('permisos/reservadores').child(auth.uid).val() == true && !data.exists() && newData.exists() && $id.matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)",
+        ".validate": "newData.hasChildren(['uid','codigo','segundos','vence'])",
+        "uid": {
+          ".validate": "newData.isString() && newData.val() == auth.uid"
+        },
+        "codigo": {
+          ".validate": "newData.val() == 'TOT-001' || newData.val() == 'TOT-002'"
+        },
+        "segundos": {
+          ".validate": "newData.val() == 30 || newData.val() == 45 || newData.val() == 60"
+        },
+        "vence": {
+          ".validate": "newData.isNumber() && newData.val() >= now + 25000 && newData.val() <= now + 31000"
         },
         "$otro": {
           ".validate": false
