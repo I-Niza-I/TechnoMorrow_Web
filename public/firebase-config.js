@@ -6,6 +6,7 @@ import { getAuth } from 'https://www.gstatic.com/firebasejs/13.4.0/firebase-auth
 const firebaseConfig = {
   apiKey: 'AIzaSyBly0fURq5AASPhsSgUnnT7u_NOfKusc0A',
   authDomain: 'technomorrow-31b10.firebaseapp.com',
+  databaseURL: 'https://technomorrow-31b10-default-rtdb.firebaseio.com/',
   projectId: 'technomorrow-31b10',
   storageBucket: 'technomorrow-31b10.firebasestorage.app',
   messagingSenderId: '628192242459',

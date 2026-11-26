@@ -3,7 +3,36 @@ import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/
 import { extraerCodigoTotem, codigoDesdeURL, urlConCodigo, iniciarEscaner } from './totem-utils.js';
 import { obtenerRolUsuario, mensajeErrorPerfil } from './roles.js';
 
+import { observarTotem, solicitarReserva, codigoPermitido, ahoraServidor } from './control-totem.js';
+
 const codigoInicial=codigoDesdeURL();
+let estadoActual = null, idSolicitud = null, observacion = null, relojReserva = null;
+let fueActiva = false, vistaSolicitud = false, solicitudHasta = 0;
+const estadoTotem = document.getElementById('estado-totem-rtdb');
+
+function actualizarEstado() {
+  if (!estadoActual) { estadoTotem.textContent = 'Sin datos de disponibilidad.'; return; }
+  const { estado, id, vence } = estadoActual;
+  const resta = Math.max(0, Math.ceil((vence - ahoraServidor()) / 1000));
+  estadoTotem.textContent = estado === 'libre' ? 'Tótem libre.' :
+    estado === 'pendiente' ? 'Tótem ocupado: esperando al controlador.' :
+    estado === 'activo' ? `Tótem ocupado: ${resta} s restantes.` : 'Estado desconocido.';
+  form.querySelector('button[type="submit"]').disabled = estado !== 'libre';
+  if (!idSolicitud) return;
+  if (id === idSolicitud && estado === 'pendiente') {
+    vistaSolicitud = true;
+    mensaje.textContent = resta > 0 ? `Solicitud enviada. Esperando ESP8266 (${resta} s).` : 'El ESP8266 no respondió a tiempo. No se activará una solicitud vencida.';
+  } else if (id === idSolicitud && estado === 'activo') {
+    fueActiva = true;
+    vistaSolicitud = true;
+    mensaje.textContent = resta > 0 ? `Activación autorizada por el ESP8266. Tiempo restante: ${resta} s.` : 'Tiempo terminado. Esperando liberación del tótem.';
+  } else if (vistaSolicitud || Date.now() > solicitudHasta) {
+    mensaje.textContent = fueActiva ? 'Reserva terminada.' : 'La solicitud terminó o expiró sin confirmación del ESP8266.';
+    idSolicitud = null;
+    document.getElementById('temporizador').closest('.cuenta-regresiva').hidden = true;
+  }
+}
+
 const espera=document.getElementById('verificando-sesion');
 const panel=document.getElementById('panel-reserva');
 const form=document.getElementById('form-tiempo');
@@ -14,78 +43,50 @@ const tiempoTexto=document.getElementById('temporizador');
 const video=document.getElementById('vista-camara');
 let segundos=120,intervalo=null,escaner=null,codigoConfirmado=false;
 let metodo='codigo';
-// NUEVO: sesión válida para cualquiera de los dos roles; nunca basta con tener un UID.
-let uidVerificado = null;
-let revisionSesion = 0;
-let revisionCamara = 0;
-let abriendoCamara = false;
-const destinoInicio = codigoInicial ? urlConCodigo('index.html', codigoInicial) : './index.html';
-function puedeReservar() {
-  return !!uidVerificado && auth?.currentUser?.uid === uidVerificado;
-}
-// NUEVO: volver al inicio sin cerrar sesión ni perder el código actual.
-document.getElementById('volver-inicio-reserva').href = destinoInicio;
 
-// MODIFICADO: acceso protegido para usuario Y administrador, sin redirección por rol.
-if(!codigoInicial) window.location.replace('./index.html');
-else if(!firebaseConfigurado || !auth){espera.textContent='Completa firebase-config.js antes de iniciar sesión y reservar.';}
+// Nunca mostrar o aceptar reservas sin sesión verificada.
+if(!codigoInicial || !codigoPermitido(codigoInicial)) window.location.replace('./index.html');
+else if(!firebaseConfigurado){espera.textContent='Completa firebase-config.js antes de iniciar sesión y reservar.';}
 else onAuthStateChanged(auth,async usuario=>{
-  const revision = ++revisionSesion;
-  uidVerificado = null;
-  detenerTodo();
-  // NUEVO: no reutilizar una confirmación anterior al cambiar de sesión.
-  form.hidden = false;
-  confirmacion.hidden = true;
-  codigoConfirmado = false;
-  codigoInput.value = '';
-  mensaje.textContent = '';
-  document.getElementById('confirmar-codigo').disabled = false;
-  document.getElementById('abrir-camara').disabled = false;
-  document.getElementById('cambiar-metodo').disabled = false;
-  panel.hidden = true;
-  espera.hidden = false;
   if(!usuario) {window.location.replace(urlConCodigo('login.html',codigoInicial));return;}
-  espera.textContent='Verificando perfil…';
   try {
-    // roles.js ya rechaza perfiles inexistentes, inactivos y roles desconocidos.
-    await obtenerRolUsuario(usuario);
-    if (revision !== revisionSesion || auth.currentUser?.uid !== usuario.uid) return;
-    uidVerificado = usuario.uid;
+    const rol = await obtenerRolUsuario(usuario);
+    if(rol === 'admin') {
+      window.location.replace('./estadisticas.html');
+      return;
+    }
     espera.hidden=true;panel.hidden=false;
     document.getElementById('totem-codigo-inicial').textContent=codigoInicial;
+    form.querySelector('button[type="submit"]').disabled = true;
+    observacion?.();
+    observacion = observarTotem(codigoInicial, datos => {
+      estadoActual = datos;
+      if (!datos) form.querySelector('button[type="submit"]').disabled = true;
+      actualizarEstado();
+    }, error => {
+      estadoActual = null;
+      estadoTotem.textContent = 'No se pudo consultar el tótem: ' + error.code;
+      form.querySelector('button[type="submit"]').disabled = true;
+    });
+    clearInterval(relojReserva);
+    relojReserva = setInterval(actualizarEstado, 500);
   } catch(error) {
-    if (revision !== revisionSesion) return;
     console.error('No se pudo comprobar el rol para reservar:',error);
     espera.textContent=mensajeErrorPerfil(error);
     panel.hidden=true;
   }
-}, error => {
-  ++revisionSesion;
-  uidVerificado = null;
-  detenerTodo();
-  panel.hidden = true;
-  espera.hidden = false;
-  espera.textContent = 'No se pudo verificar la sesión. Vuelve al inicio.';
-  console.error(error);
 });
 
 document.getElementById('cerrar-sesion').addEventListener('click',async()=>{
   detenerTodo();
-  // MODIFICADO: cierre explícito de sesión; si falla no fingimos que se cerró.
-  try {
-    await signOut(auth);
-    window.location.replace('./index.html');
-  } catch (error) {
-    mensaje.textContent = 'No fue posible cerrar sesión. Vuelve a intentarlo.';
-    console.error(error);
-    alert('No fue posible cerrar sesión. Vuelve a intentarlo.');
-  }
+  await signOut(auth);
+  window.location.replace('./index.html');
 });
 
 form.addEventListener('submit',e=>{
   e.preventDefault();
-  // MODIFICADO: exigir un perfil comprobado también al ejecutar las acciones.
-  if(!puedeReservar()){window.location.replace(destinoInicio);return;}
+  if(!auth?.currentUser){window.location.replace(urlConCodigo('login.html',codigoInicial));return;}
+  if (estadoActual?.estado !== 'libre') { alert('El tótem no está libre.'); return; }
   const seleccion=form.querySelector('input[name="tiempo"]:checked');
   if(!seleccion){alert('Selecciona 30, 45 o 60 segundos.');return;}
   form.hidden=true;confirmacion.hidden=false;codigoConfirmado=false;
@@ -98,54 +99,46 @@ form.addEventListener('submit',e=>{
 function mostrarTiempo(){tiempoTexto.textContent=`${String(Math.floor(Math.max(0,segundos)/60)).padStart(2,'0')}:${String(Math.max(0,segundos)%60).padStart(2,'0')}`;}
 function caducar(){detenerTodo();mensaje.textContent='Se agotó el tiempo de confirmación. Vuelve al inicio de la reserva.';mensaje.classList.add('formato-mensaje-estado');document.getElementById('confirmar-codigo').disabled=true;document.getElementById('abrir-camara').disabled=true;}
 function elegirMetodo(m){metodo=m;document.getElementById('panel-codigo').hidden=m!=='codigo';document.getElementById('panel-qr').hidden=m!=='qr';document.getElementById('cambiar-metodo').textContent=m==='codigo'?'Prefiero escanear el QR':'Prefiero ingresar el código';}
-document.getElementById('cambiar-metodo').addEventListener('click',()=>{detenerCamara();elegirMetodo(metodo==='codigo'?'qr':'codigo');});
+document.getElementById('cambiar-metodo').addEventListener('click',()=>{escaner?.stop();escaner=null;elegirMetodo(metodo==='codigo'?'qr':'codigo');});
 
 document.getElementById('confirmar-codigo').addEventListener('click',()=>confirmar(codigoInput.value));
 codigoInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirmar(codigoInput.value);}});
 
 document.getElementById('abrir-camara').addEventListener('click',async()=>{
-  // NUEVO: impedir aperturas paralelas y descartar la cámara si cambia la sesión.
-  if(!puedeReservar() || segundos<=0 || codigoConfirmado || abriendoCamara) return;
-  detenerCamara();
-  const revision = revisionCamara;
-  abriendoCamara = true;
   document.getElementById('mensaje-camara').textContent='Abriendo cámara…';
-  try {
-    const nuevo = await iniciarEscaner(video, valor => {
-      if(revision !== revisionCamara || !puedeReservar()) return;
-      detenerCamara();
-      confirmar(valor);
-    });
-    if(revision !== revisionCamara || !puedeReservar() || segundos<=0 || codigoConfirmado) {
-      nuevo.stop();
-      return;
-    }
-    escaner = nuevo;
-    document.getElementById('mensaje-camara').textContent='Coloca el QR frente a la cámara.';
-  } catch(e) {
-    if(revision === revisionCamara) document.getElementById('mensaje-camara').textContent=e.message||'No fue posible abrir la cámara.';
-  } finally {
-    if(revision === revisionCamara) abriendoCamara = false;
-  }
+  try{escaner=await iniciarEscaner(video,confirmar);document.getElementById('mensaje-camara').textContent='Coloca el QR frente a la cámara.';}
+  catch(e){document.getElementById('mensaje-camara').textContent=e.message||'No fue posible abrir la cámara.';}
 });
-// NUEVO: invalidar también una apertura pendiente de cámara al salir o caducar.
-function detenerCamara(){++revisionCamara;abriendoCamara=false;escaner?.stop();escaner=null;}
-function detenerTodo(){clearInterval(intervalo);intervalo=null;detenerCamara();}
-// CONSERVADO: segunda lectura obligatoria y temporizador de confirmación de 120 segundos.
-function confirmar(valor){
+function detenerTodo(){clearInterval(intervalo);intervalo=null;escaner?.stop();escaner=null;}
+async function confirmar(valor){
   if(segundos<=0 || codigoConfirmado)return;
-  // MODIFICADO: exigir un perfil comprobado también al ejecutar las acciones.
-  if(!puedeReservar()){window.location.replace(destinoInicio);return;}
+  if(!auth?.currentUser){window.location.replace(urlConCodigo('login.html',codigoInicial));return;}
   const leido=extraerCodigoTotem(valor);
   if(!leido){mensaje.textContent='Ingresa o escanea un código válido.';return;}
   if(leido!==codigoInicial){mensaje.textContent='El código no coincide con el tótem seleccionado. Revisa el QR o vuelve a escribirlo.';return;}
   codigoConfirmado=true;detenerTodo();
-  // MODIFICADO: se muestra la unidad del prototipo; no hay activación física todavía.
   const duracion=Number(form.querySelector('input[name="tiempo"]:checked')?.value);
   mensaje.classList.add('formato-mensaje-estado');
-  mensaje.textContent=`Identidad y código del tótem ${leido} comprobados. Duración elegida: ${duracion} segundos. Confirmación de prueba: no se ha creado una reserva real ni se ha activado el relé. La integración con Realtime Database y ESP8266 sigue pendiente.`;
+  mensaje.textContent = 'Enviando solicitud a Realtime Database…';
+  tiempoTexto.closest('.cuenta-regresiva').hidden = true;
   document.getElementById('confirmar-codigo').disabled=true;
   document.getElementById('abrir-camara').disabled=true;
   document.getElementById('cambiar-metodo').disabled=true;
+  try {
+    idSolicitud = await solicitarReserva(leido, duracion);
+    fueActiva = false;
+    vistaSolicitud = false;
+    solicitudHasta = Date.now() + 100000;
+    mensaje.textContent = 'Solicitud registrada. Esperando confirmación del ESP8266…';
+    actualizarEstado();
+  } catch (error) {
+    console.error('Reserva rechazada:', error);
+    mensaje.textContent = 'No se pudo reservar: ' + (error.code === 'PERMISSION_DENIED' || error.code === 'permission-denied' ? 'permisos insuficientes, tótem ocupado o solicitud vencida.' : error.message);
+  }
+  const volver = document.createElement('a');
+  volver.href = urlConCodigo('reserva.html', codigoInicial);
+  volver.className = 'boton-cambiar';
+  volver.textContent = 'Volver a seleccionar duración';
+  mensaje.after(volver);
 }
-window.addEventListener('pagehide',detenerTodo);
+window.addEventListener('pagehide', () => { detenerTodo(); observacion?.(); clearInterval(relojReserva); });

@@ -11,15 +11,13 @@
 <body>
     <header>
         <h1>Reserva de carga</h1>
-        <!-- NUEVO: regresar al inicio sin cerrar sesión. -->
-        <a id="volver-inicio-reserva" class="boton-cambiar" style="margin-left:auto;margin-top:0" href="./index.html">Volver al inicio</a>
     </header>
     <main>
       <div id="verificando-sesion" class="aviso-reserva" role="status">Verificando la sesión de Firebase…</div>
       <div id="panel-reserva" hidden>
         <div class="reserva-identidad"><div><small>TÓTEM IDENTIFICADO</small><strong id="totem-codigo-inicial">—</strong></div><button id="cerrar-sesion" type="button" class="boton-cambiar">Cerrar sesión</button></div>
-        <!-- MODIFICADO: tiempos del prototipo en segundos; todavía no se envían órdenes al hardware. -->
-        <p class="explicacion-reserva">Selecciona un tiempo. Para confirmar deberás escanear o ingresar <strong>nuevamente el código del mismo tótem</strong>.</p>
+        <p id="estado-totem-rtdb" role="status" aria-live="polite">Consultando disponibilidad…</p>
+        <p class="explicacion-reserva">Selecciona un tiempo de prueba en segundos. Para confirmar deberás escanear o ingresar <strong>nuevamente el código del mismo tótem</strong>.</p>
         <section>
             <form id="form-tiempo" class="fade-panel">
                 <article>
@@ -80,7 +78,7 @@
                 <p id="instruccion-metodo"></p>
 
                 <p class="cuenta-regresiva">
-                    Tiempo para confirmar: <strong id="temporizador">02:00</strong>
+                    Tiempo restante: <strong id="temporizador">02:00</strong>
                 </p>
 
                 <div id="panel-codigo">
@@ -108,11 +106,12 @@
                 <button id="cambiar-metodo" class="boton-cambiar" type="button"></button>
                 <p id="mensaje-reserva" role="status"></p>
             </section>
-        </section>
+
       </div>
             <footer>
                 <small>&copy; 2026 TechnoMorrow. Todos los derechos reservados</small>
             </footer>
+        </section>
     </main>
 </body>
 </html>

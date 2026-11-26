@@ -1,0 +1,28 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "control": {
+      "$codigo": {
+        ".read": "($codigo == 'TOT-001' || $codigo == 'TOT-002') && auth != null && (root.child('permisos/reservadores').child(auth.uid).val() == true || root.child('permisos/dispositivos').child($codigo).val() == auth.uid)",
+        ".write": "($codigo == 'TOT-001' || $codigo == 'TOT-002') && auth != null && newData.exists() && ((root.child('permisos/reservadores').child(auth.uid).val() == true && data.child('estado').val() == 'libre' && newData.child('estado').val() == 'pendiente' && newData.child('id').val() != 'inicio' && newData.child('vence').val() >= now + 25000 && newData.child('vence').val() <= now + 31000) || (root.child('permisos/dispositivos').child($codigo).val() == auth.uid && ((data.child('estado').val() == 'pendiente' && data.child('vence').val() > now && newData.child('estado').val() == 'activo' && newData.child('id').val() == data.child('id').val() && newData.child('segundos').val() == data.child('segundos').val() && newData.child('vence').val() >= now + newData.child('segundos').val() * 1000 - 5000 && newData.child('vence').val() <= now + newData.child('segundos').val() * 1000 + 1000) || ((data.child('estado').val() == 'pendiente' || data.child('estado').val() == 'activo') && data.child('vence').val() <= now && newData.child('estado').val() == 'libre' && newData.child('id').val() == 'inicio' && newData.child('segundos').val() == 0 && newData.child('vence').val() == 0))))",
+        ".validate": "newData.hasChildren(['estado','id','segundos','vence']) && ((newData.child('estado').val() == 'libre' && newData.child('id').val() == 'inicio' && newData.child('segundos').val() == 0 && newData.child('vence').val() == 0) || ((newData.child('estado').val() == 'pendiente' || newData.child('estado').val() == 'activo') && (newData.child('segundos').val() == 30 || newData.child('segundos').val() == 45 || newData.child('segundos').val() == 60) && newData.child('vence').val() > 0 && newData.child('id').val() != 'inicio'))",
+        "estado": {
+          ".validate": "newData.isString()"
+        },
+        "id": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+        },
+        "segundos": {
+          ".validate": "newData.isNumber()"
+        },
+        "vence": {
+          ".validate": "newData.isNumber()"
+        },
+        "$otro": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}
