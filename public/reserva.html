@@ -11,13 +11,16 @@
 <body>
     <header>
         <h1>Reserva de carga</h1>
+        <!-- NUEVO: regresar al inicio sin cerrar sesión. -->
+        <a id="volver-inicio-reserva" class="boton-cambiar" style="margin-left:auto;margin-top:0" href="./index.html">Volver al inicio</a>
     </header>
     <main>
       <div id="verificando-sesion" class="aviso-reserva" role="status">Verificando la sesión de Firebase…</div>
       <div id="panel-reserva" hidden>
         <div class="reserva-identidad"><div><small>TÓTEM IDENTIFICADO</small><strong id="totem-codigo-inicial">—</strong></div><button id="cerrar-sesion" type="button" class="boton-cambiar">Cerrar sesión</button></div>
+        <!-- MODIFICADO: tiempos del prototipo en segundos; todavía no se envían órdenes al hardware. -->
         <p class="explicacion-reserva">Selecciona un tiempo. Para confirmar deberás escanear o ingresar <strong>nuevamente el código del mismo tótem</strong>.</p>
-        <Section>
+        <section>
             <form id="form-tiempo" class="fade-panel">
                 <article>
                     <input class="radio-tarjeta" type="radio" id="tiempo1" name="tiempo" value="30">
@@ -30,7 +33,7 @@
                         </svg>
 
                         <span class="descripcion-tarjeta">
-                            30 minutos de carga para dispositivos móviles
+                            30 segundos de carga para dispositivos móviles
                         </span>
                     </label>
                 </article>
@@ -46,7 +49,7 @@
                         </svg>
 
                         <span class="descripcion-tarjeta">
-                            45 minutos de carga para Tablets/Ipads
+                            45 segundos de carga para Tablets/Ipads
                         </span>
                     </label>
                 </article>
@@ -63,7 +66,7 @@
                         </svg>
 
                         <span class="descripcion-tarjeta">
-                            60 minutos de carga para Computadoras
+                            60 segundos de carga para Computadoras
                         </span>
                     </label>
                 </article>
@@ -77,7 +80,7 @@
                 <p id="instruccion-metodo"></p>
 
                 <p class="cuenta-regresiva">
-                    Tiempo restante: <strong id="temporizador">02:00</strong>
+                    Tiempo para confirmar: <strong id="temporizador">02:00</strong>
                 </p>
 
                 <div id="panel-codigo">
@@ -105,12 +108,11 @@
                 <button id="cambiar-metodo" class="boton-cambiar" type="button"></button>
                 <p id="mensaje-reserva" role="status"></p>
             </section>
-
+        </section>
       </div>
             <footer>
                 <small>&copy; 2026 TechnoMorrow. Todos los derechos reservados</small>
             </footer>
-        </Section>
     </main>
 </body>
 </html>

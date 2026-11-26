@@ -10,7 +10,18 @@
 </head>
 <body>
     <header class="encabezado-inicio">
-        <h1>Tótem de carga</h1>
+        <!-- MODIFICADO: la cabecera es ahora el centro de navegación de ambos roles. -->
+        <a class="marca-inicio" href="./index.html" aria-label="TechnoMorrow, inicio">
+            <span class="marca-simbolo" aria-hidden="true">T↯</span>
+            <span>Techno<span class="marca-acento">Morrow</span><small>CONTROL DE CARGA</small></span>
+        </a>
+        <!-- NUEVO: estos controles se muestran únicamente después de verificar la sesión. -->
+        <nav class="acciones-inicio" aria-label="Acceso a la cuenta">
+            <a id="acceso-estadisticas" class="accion-header" href="./estadisticas.html" hidden>Estadísticas ↗</a>
+            <span id="cuenta-inicio" class="cuenta-inicio" hidden></span>
+            <a id="acceso-login" class="accion-header accion-principal" href="./login.html" hidden>Iniciar sesión</a>
+            <button id="salir-inicio" class="accion-header" type="button" hidden>Cerrar sesión</button>
+        </nav>
     </header>
 
     <main class="pagina-inicio">
@@ -25,24 +36,31 @@
             </p>
 
             <ol class="pasos-inicio">
-                <li>Elige una duración para la carga.</li>
-                <li>Identifica el enchufe con su código o escaneando su QR.</li>
-                <li>Confirma la reserva y conecta tu dispositivo.</li>
+                <!-- MODIFICADO: el acceso ya no exige identificar el tótem antes del login. -->
+                <li>Inicia sesión con tu cuenta.</li>
+                <li>Identifica el tótem con su código o escaneando su QR.</li>
+                <li>Selecciona una duración y confirma el código.</li>
             </ol>
 
+            <!-- NUEVO: informa del código recibido por URL o cámara; no confirma que exista en la base de datos. -->
+            <div id="contexto-totem" class="contexto-totem" hidden>
+                <span class="contexto-icono" aria-hidden="true">▦</span>
+                <div><small>CÓDIGO DEL TÓTEM RECIBIDO</small><strong id="contexto-codigo"></strong></div>
+            </div>
             <form id="form-identificar" class="form-codigo-inicio">
                 <label for="codigo-inicial">Código del tótem</label>
-                <div class="input-code-group"><input id="codigo-inicial" type="text" placeholder="Ejemplo: TOT-001" autocapitalize="characters" autocomplete="off" required maxlength="45"><button type="submit" class="boton-enviar">Continuar <span aria-hidden="true">→</span></button></div>
+                <div class="input-code-group"><input id="codigo-inicial" type="text" placeholder="Ejemplo: TOT-001" autocapitalize="characters" autocomplete="off" required maxlength="45"><!-- MODIFICADO: bloqueado desde el HTML para evitar acceso durante la carga de Firebase. --><button id="continuar-inicio" type="submit" class="boton-enviar" disabled>Continuar <span aria-hidden="true">→</span></button></div>
             </form>
             <div class="separador-inicio"><span>o identifica el tótem con su QR</span></div>
-            <button type="button" id="escanear-inicio" class="boton-qr-inicio">▦ &nbsp; Escanear código QR</button>
+            <button type="button" id="escanear-inicio" class="boton-qr-inicio" disabled>▦ &nbsp; Escanear código QR</button>
             <video id="camara-inicio" playsinline muted hidden></video>
             <p id="inicio-mensaje" class="inicio-mensaje" role="status" aria-live="polite"></p>
 
-            <a class="enlace-panel-demo" href="./login.html">Acceso administrador ↗</a>
+            <!-- NUEVO: estado de sesión independiente de los mensajes del escáner. -->
+            <p id="estado-sesion-inicio" class="estado-sesion-inicio" role="status" aria-live="polite">Verificando sesión…</p>
 
             <p class="nota-inicio">
-                Identifica primero el tótem. Luego inicia sesión y selecciona el tiempo de reserva. Para confirmar, deberás leer o ingresar su código nuevamente.
+                Si llegaste mediante el QR físico, conservaremos su código al iniciar sesión. Para confirmar una solicitud deberás leer o ingresar el mismo código nuevamente.
             </p>
         </section>
     </main>

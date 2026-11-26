@@ -15,6 +15,7 @@
     #admin-acceso a { color:#4de356; text-decoration:underline; }
   </style>
   <script type="module" src="./admin-guard.js"></script>
+  <script type="module" src="./firebase-estadisticas.js"></script>
   <script src="./estadisticas-datos.js" defer></script>
   <script src="./estadisticas.js" defer></script>
 </head>
@@ -67,6 +68,8 @@
       </nav>
       <div class="sidebar-bottom">
         <div class="mini-status"><span class="status-pulse"></span><span><strong>Panel de análisis</strong><small id="sidebar-source">Origen: datos de ejemplo</small></span></div>
+        <!-- NUEVO: regresar a reservas sin cerrar la sesión administrativa. -->
+        <a href="./index.html" class="back-link"><svg class="ic" aria-hidden="true"><use href="#ic-plug"></use></svg> Volver al inicio</a>
         <a href="./login.html" id="cerrar-sesion-admin" class="back-link"><svg class="ic"><use href="#ic-logout"></use></svg> Cerrar sesión</a>
         <span class="sidebar-copyright">© 2026 TechnoMorrow</span>
       </div>
@@ -78,7 +81,7 @@
           <button id="open-sidebar" class="icon-button open-sidebar" aria-label="Abrir menú"><svg class="ic"><use href="#ic-menu"></use></svg></button>
           <span class="breadcrumb">Administración <span>/</span> <strong id="breadcrumb-page">Resumen general</strong></span>
         </div>
-        <div class="topbar-right"><span class="env-pill" id="env-pill"><span class="env-dot"></span> MODO DEMOSTRACIÓN</span><span class="admin-avatar" title="Vista de administración de demostración">AD</span></div>
+        <div class="topbar-right"><span class="env-pill" id="env-pill"><span class="env-dot"></span> MODO DEMOSTRACIÓN</span><span class="admin-avatar" title="Cuenta administrativa">AD</span></div>
       </header>
 
       <main class="main-content">
@@ -86,6 +89,8 @@
           <div><div class="eyebrow"><span class="eyebrow-square"></span> ANALÍTICA INSTITUCIONAL</div><h1 id="page-title">Resumen general</h1><p id="page-description">Visión general del uso, la disponibilidad y la actividad de los puntos de carga.</p></div>
           <div class="heading-actions"><button class="button button-outline" id="download-current" type="button"><svg class="ic"><use href="#ic-download"></use></svg> Descargar CSV</button></div>
         </div>
+
+        <div id="firebase-message" class="section-info" role="status" aria-live="polite">Conectando con Cloud Firestore…</div>
 
         <div id="demo-banner" class="demo-banner"><svg class="ic"><use href="#ic-info"></use></svg><span>Estás viendo <strong>datos simulados</strong>. Ningún gráfico representa actividad real de Firebase. Puedes desactivarlos en <code>estadisticas-datos.js</code>.</span><button id="dismiss-banner" type="button" aria-label="Ocultar aviso">×</button></div>
 
@@ -136,7 +141,7 @@
         <section class="page-section" id="page-satisfaccion" data-section="satisfaccion" hidden>
           <div class="section-info"><svg class="ic"><use href="#ic-info"></use></svg> <strong>Sin filtros de fecha, hora ni tótem.</strong> En <code>IdeaScript.txt</code> la tabla <code>satisfaccion</code> no tiene fecha, usuario ni clave hacia reservas. Estos resultados son globales.</div>
           <div class="satisfaction-head"><div class="satisfaction-score"><span class="score-label">Calificación promedio global</span><div class="score-number" id="sat-score">—</div><div class="score-stars" id="sat-stars" aria-label="Puntuación promedio"></div><span class="score-sub" id="sat-total">— evaluaciones</span></div><article class="panel satisfaction-distribution"><div class="panel-heading"><div><span class="panel-kicker">VALORACIONES</span><h2>Distribución de calificaciones</h2></div></div><div id="chart-ratings" class="ratings-list"></div></article></div>
-          <article class="panel"><div class="panel-heading"><div><span class="panel-kicker">COMENTARIOS</span><h2>Opiniones registradas</h2><p>Comentarios de demostración. No se muestran datos personales.</p></div></div><div id="sat-comments" class="comments-grid"></div></article>
+          <article class="panel"><div class="panel-heading"><div><span class="panel-kicker">COMENTARIOS</span><h2>Opiniones registradas</h2><p>Comentarios almacenados en Firestore. No se muestran datos de identificación junto a ellos.</p></div></div><div id="sat-comments" class="comments-grid"></div></article>
         </section>
 
         <section class="page-section" id="page-prediccion" data-section="prediccion" hidden>
@@ -149,7 +154,7 @@
           <div class="data-title"><div><h2>Registros disponibles</h2><p>Explora las entidades utilizadas por el panel y exporta archivos compatibles con herramientas de minería de datos.</p></div><button type="button" class="button button-green" id="download-table"><svg class="ic"><use href="#ic-download"></use></svg> Exportar tabla CSV</button></div>
           <div class="data-tabs" id="data-tabs" role="tablist" aria-label="Seleccionar tabla"><button type="button" class="data-tab is-active" data-table="reservas" role="tab" aria-selected="true">Reservas</button><button type="button" class="data-tab" data-table="totems" role="tab" aria-selected="false">Tótems</button><button type="button" class="data-tab" data-table="laboratorio_informatica" role="tab" aria-selected="false">Laboratorios</button><button type="button" class="data-tab" data-table="satisfaccion" role="tab" aria-selected="false">Satisfacción</button><button type="button" class="data-tab" data-table="eventos_hardware" role="tab" aria-selected="false">Eventos</button><button type="button" class="data-tab" data-table="usuario" role="tab" aria-selected="false">Usuarios</button></div>
           <article class="panel data-card"><div class="data-toolbar"><div><h3 id="table-title">Reservas</h3><span id="table-subtitle" class="data-subtitle">— registros</span></div><label class="search-box"><svg class="ic"><use href="#ic-search"></use></svg><input type="search" id="table-search" placeholder="Buscar en la tabla…" aria-label="Buscar en la tabla"></label></div><div class="data-table-scroll"><table id="data-table"><thead></thead><tbody></tbody></table></div><div class="data-footer"><span id="table-counter">—</span><div class="pagination"><button id="prev-page" type="button">Anterior</button><span id="current-page">Página 1</span><button id="next-page" type="button">Siguiente</button></div></div></article>
-          <p class="data-privacy"><svg class="ic"><use href="#ic-info"></use></svg> La tabla de usuarios y sus exportaciones deberán estar protegidas mediante autenticación y autorización administrativa al conectar Firebase. Esta versión contiene identidades ficticias.</p>
+          <p class="data-privacy"><svg class="ic"><use href="#ic-info"></use></svg> Los registros de usuarios pueden incluir información personal. Accede y exporta estos datos únicamente con autorización administrativa.</p>
         </section>
 
         <footer class="main-footer"><span>TechnoMorrow <span class="footer-separator">·</span> Sistema de tótems de carga</span><span id="footer-source">Visualizaciones de demostración</span></footer>

@@ -1,2 +1,27 @@
 /* Extensión de la página de inicio: identificación previa del tótem. */
 .form-codigo-inicio{margin-top:26px}.form-codigo-inicio label{display:block;margin-bottom:10px;color:#bfeac8;font-size:13px;font-weight:700}.input-code-group{display:flex;gap:10px}.input-code-group input{min-width:0;flex:1;border:1px solid #46775f;background:#102d29;border-radius:10px;padding:12px 14px;color:#fff;font:inherit;font-size:15px}.input-code-group input:focus-visible{outline:2px solid #4de356;outline-offset:2px}.input-code-group .boton-enviar{width:auto;margin:0;padding:12px 21px;white-space:nowrap}.separador-inicio{text-align:center;color:#789d88;margin:22px 0 12px;position:relative;font-size:12px}.boton-qr-inicio{border:1px solid #37714f;background:#173c32;border-radius:10px;padding:12px 16px;width:100%;color:#bbf6c6;font:inherit;font-weight:700;cursor:pointer}.boton-qr-inicio:hover{background:#23543d}.inicio-mensaje{color:#c2d7cb;margin-top:12px;font-size:13px}.inicio-mensaje:empty{display:none}#camara-inicio{max-height:330px;background:#000;border-radius:13px;width:100%;margin-top:14px;object-fit:cover}button:focus-visible{outline:2px solid #4de356;outline-offset:3px}@media(max-width:550px){.input-code-group{flex-direction:column}.input-code-group .boton-enviar{width:100%}}
+
+/* NUEVO: navegación responsive en el header sin cambiar styles.css ni otras páginas. */
+.encabezado-inicio { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.marca-inicio { display:flex; align-items:center; gap:10px; color:#f0fbf4; text-decoration:none; font-size:1.15rem; font-weight:800; line-height:1.2; }
+.marca-inicio small { display:block; font-size:.62rem; letter-spacing:1.5px; color:#b5cfc0; margin-top:4px; }
+.marca-simbolo { display:grid; place-items:center; width:44px; height:44px; border:1px solid #559667; border-radius:12px; background:#103a32; color:#4de356; }
+.marca-acento { color:#4de356; }
+.acciones-inicio { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.accion-header { display:inline-flex; align-items:center; justify-content:center; min-height:42px; padding:8px 14px; border:1px solid #528d65; border-radius:9px; color:#e0f7e8; background:#173c32; text-decoration:none; font:inherit; font-size:.85rem; font-weight:700; cursor:pointer; }
+.accion-header:hover { background:#27543d; }
+.accion-principal { background:#4de356; color:#102e20; }
+.accion-principal:hover { background:#85f38e; }
+.cuenta-inicio { color:#c2dfcf; font-size:.8rem; max-width:220px; overflow-wrap:anywhere; }
+/* NUEVO: apariencia de bloqueo; el atributo disabled realiza el bloqueo efectivo. */
+.contenido-inicio button:disabled, .acciones-inicio button:disabled { opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
+.contenido-inicio button:disabled:hover { transform:none; box-shadow:none; }
+/* NUEVO: contexto QR y aviso de autenticación, visualmente separados. */
+.contexto-totem { display:flex; align-items:center; gap:12px; padding:14px; margin-top:22px; border:1px solid #46775f; border-radius:12px; background:#102d29; }
+.contexto-icono { font-size:1.6rem; color:#4de356; }
+.contexto-totem small { display:block; color:#b5d2bf; font-size:.7rem; letter-spacing:.06em; }
+.contexto-totem strong { color:#a2eeb5; overflow-wrap:anywhere; }
+.estado-sesion-inicio { margin-top:18px; padding:12px; border:1px solid #56745d; border-radius:10px; color:#e2d3a4; text-align:center; font-size:.88rem; background:#12352c; }
+.estado-sesion-inicio.sesion-activa { color:#a2eeb5; }
+.accion-header:focus-visible, .marca-inicio:focus-visible { outline:2px solid #4de356; outline-offset:3px; }
+@media(max-width:600px) { .encabezado-inicio { padding:14px 16px; } .acciones-inicio { width:100%; justify-content:flex-start; } .cuenta-inicio { flex-basis:100%; max-width:none; } }

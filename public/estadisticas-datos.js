@@ -8,7 +8,7 @@
  * Para borrar TODOS los datos de ejemplo basta con cambiar a false.
  * No hay escritura de datos ni conexión real a Firebase en este archivo.
  */
-window.TOTEMS_DEMO_ACTIVE = true;
+window.TOTEMS_DEMO_ACTIVE = false;
 
 // Esquema alineado con IdeaScript.txt: laboratorios, totems,
 // reservas, usuario, satisfaccion y eventos_hardware.

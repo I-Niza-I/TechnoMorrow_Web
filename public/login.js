@@ -38,14 +38,13 @@ function bloquear(bloqueado, texto = 'Iniciar sesión') {
   textoBoton.textContent = texto;
 }
 
-// El administrador puede iniciar sesión sin seleccionar un tótem
-if (!codigo) {
-  etiquetaCodigo.textContent =
-    'Sin tótem seleccionado · acceso administrativo';
-
-  cajaCodigo.querySelector('.verified').hidden = true;
-} else {
+// MODIFICADO: cualquier usuario puede iniciar sesión sin identificar un tótem.
+// Si la URL contiene un código, se conserva para volver al inicio sin perderlo.
+const destinoInicio = codigo ? urlConCodigo('index.html', codigo) : './index.html';
+document.getElementById('volver-inicio-login').href = destinoInicio;
+if (codigo) {
   etiquetaCodigo.textContent = codigo;
+  cajaCodigo.hidden = false;
 }
 
 // Comprobar configuración de Firebase
@@ -57,37 +56,12 @@ if (!firebaseConfigurado) {
   bloquear(true);
 }
 
-// Consultar rol y redirigir al usuario
-async function irSegunRol(usuario) {
-  const rol = await obtenerRolUsuario(usuario);
-
-  // ADMINISTRADOR
-  if (rol === 'admin') {
-    window.location.replace('./estadisticas.html');
-    return true;
-  }
-
-  // USUARIO NORMAL
-  if (rol === 'usuario') {
-
-    // Para reservar se necesita un tótem previamente identificado
-    if (!codigo) {
-      mostrarError(
-        'Sesión iniciada, pero necesitas identificar un tótem para reservar. ' +
-        'Vuelve al inicio e ingresa o escanea su código.'
-      );
-
-      return false;
-    }
-
-    window.location.replace(
-      urlConCodigo('reserva.html', codigo)
-    );
-
-    return true;
-  }
-
-  return false;
+// MODIFICADO: el rol se valida, pero ya no determina una redirección diferente.
+// Ambos perfiles válidos vuelven al index; allí se habilitan sus permisos.
+async function volverAlInicio(usuario) {
+  await obtenerRolUsuario(usuario);
+  if (auth.currentUser?.uid !== usuario.uid) return;
+  window.location.replace(destinoInicio);
 }
 
 // Si ya existe una sesión, consultar el rol
@@ -96,13 +70,15 @@ if (auth) {
     auth,
 
     async usuario => {
-      if (!usuario || enviando) return;
+      // NUEVO: esperar la recuperación de sesión antes de habilitar el formulario.
+      if (enviando) return;
+      if (!usuario) { bloquear(false); return; }
 
       bloquear(true, 'Comprobando permisos…');
       mostrarError('');
 
       try {
-        await irSegunRol(usuario);
+        await volverAlInicio(usuario);
 
       } catch (error) {
         console.error(
@@ -120,9 +96,8 @@ if (auth) {
     error => {
       console.error('Error de sesión:', error);
 
-      mostrarError(
-        'No se pudo comprobar tu sesión de Firebase.'
-      );
+      mostrarError('No se pudo comprobar tu sesión de Firebase. Recarga la página.');
+      bloquear(true);
     }
   );
 }
@@ -148,7 +123,8 @@ toggle.addEventListener('click', () => {
 form.addEventListener('submit', async evento => {
   evento.preventDefault();
 
-  if (!auth || enviando) return;
+  // NUEVO: impedir el envío mientras se recupera o verifica la sesión.
+  if (!auth || enviando || boton.disabled) return;
 
   // Validar campos
   if (!email.value.trim() || !clave.value) {
@@ -162,7 +138,7 @@ form.addEventListener('submit', async evento => {
   mostrarError('');
 
   try {
-    // Persistencia de la sesión
+    // CONSERVADO: la sesión permanece en la pestaña durante la navegación
     await setPersistence(
       auth,
       browserSessionPersistence
@@ -177,8 +153,8 @@ form.addEventListener('submit', async evento => {
 
     bloquear(true, 'Consultando perfil…');
 
-    // Consultar rol en Firestore y redirigir
-    await irSegunRol(credencial.user);
+    // MODIFICADO: consultar el perfil y regresar al inicio conservando el código
+    await volverAlInicio(credencial.user);
 
   } catch (error) {
     console.error('Error de inicio de sesión:', error);
