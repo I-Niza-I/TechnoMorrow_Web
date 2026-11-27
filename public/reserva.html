@@ -1,25 +1,5 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva</title>
-
-    <link rel="stylesheet" href="./styles.css" />
-    <script type="module" src="./script.js"></script>
-</head>
-<body>
-    <header>
-        <h1>Reserva de carga</h1>
-    </header>
-    <main>
-      <div id="verificando-sesion" class="aviso-reserva" role="status">Verificando la sesión de Firebase…</div>
-      <div id="panel-reserva" hidden>
-        <div class="reserva-identidad"><div><small>TÓTEM IDENTIFICADO</small><strong id="totem-codigo-inicial">—</strong></div><button id="cerrar-sesion" type="button" class="boton-cambiar">Cerrar sesión</button></div>
-        <p id="estado-totem-rtdb" role="status" aria-live="polite">Consultando disponibilidad…</p>
-        <p class="explicacion-reserva">Selecciona un tiempo de prueba en segundos. Para confirmar deberás escanear o ingresar <strong>nuevamente el código del mismo tótem</strong>.</p>
-        <section>
-            <form id="form-tiempo" class="fade-panel">
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#042121"><title>Reserva de carga | TechnoMorrow</title><link rel="stylesheet" href="./flujo-reserva.css"><script type="module" src="./script.js"></script></head><body><header class="flujo-header"><a class="marca" href="./index.html"><span class="marca-icono" aria-hidden="true">T↯</span><span>Techno<b>Morrow</b><small>CONTROL DE CARGA</small></span></a><a class="enlace" href="./index.html">Volver al inicio</a></header><main class="flujo-main"><section class="flujo-panel"><div id="verificando-sesion" class="aviso" role="status">Verificando tu sesión…</div><div id="panel-reserva" hidden><p class="eyebrow">PASO 01 · RESERVA</p><h1>Selecciona tu tiempo de carga</h1><p class="intro">Elige la duración de prueba y confirma. No necesitas escanear el código nuevamente.</p><div class="contexto"><div><small>TÓTEM IDENTIFICADO</small><strong id="totem-codigo-inicial">—</strong></div><span id="estado-totem-rtdb" class="estado" role="status">Consultando…</span></div><form id="form-tiempo" class="opciones">
                 <article>
                     <input class="radio-tarjeta" type="radio" id="tiempo1" name="tiempo" value="30">
                     <label class="eleccion_tiempo_reserva" for="tiempo1">
@@ -31,7 +11,7 @@
                         </svg>
 
                         <span class="descripcion-tarjeta">
-                            30 segundos de carga para dispositivos móviles
+                            <strong>30 segundos</strong><small>Dispositivos móviles</small>
                         </span>
                     </label>
                 </article>
@@ -47,7 +27,7 @@
                         </svg>
 
                         <span class="descripcion-tarjeta">
-                            45 segundos de carga para Tablets/Ipads
+                            <strong>45 segundos</strong><small>Tablets y dispositivos similares</small>
                         </span>
                     </label>
                 </article>
@@ -64,54 +44,11 @@
                         </svg>
 
                         <span class="descripcion-tarjeta">
-                            60 segundos de carga para Computadoras
+                            <strong>60 segundos</strong><small>Computadores portátiles</small>
                         </span>
                     </label>
                 </article>
 
-                <button class="boton-enviar" type="submit">Continuar a confirmación</button>
+                <button id="confirmar-tiempo" class="accion principal" type="submit" disabled>Confirmar reserva</button>
 
-            </form>
-
-            <section id="identificacion" class="panel-identificacion fade-panel" hidden>
-                <h2>Confirma el tótem</h2>
-                <p id="instruccion-metodo"></p>
-
-                <p class="cuenta-regresiva">
-                    Tiempo restante: <strong id="temporizador">02:00</strong>
-                </p>
-
-                <div id="panel-codigo">
-                    <label for="codigo-enchufe">Vuelve a ingresar el código del tótem</label>
-                    <input
-                        id="codigo-enchufe"
-                        type="text"
-                        autocomplete="off"
-                        placeholder="Ejemplo: TOT-001"
-                    >
-                    <button id="confirmar-codigo" class="boton-enviar" type="button">
-                        Confirmar código
-                    </button>
-                </div>
-
-                <div id="panel-qr" hidden>
-                    <button id="abrir-camara" class="boton-enviar" type="button">
-                        Abrir cámara y escanear QR
-                    </button>
-
-                    <video id="vista-camara" playsinline muted hidden></video>
-                    <p id="mensaje-camara" role="status"></p>
-                </div>
-
-                <button id="cambiar-metodo" class="boton-cambiar" type="button"></button>
-                <p id="mensaje-reserva" role="status"></p>
-            </section>
-
-      </div>
-            <footer>
-                <small>&copy; 2026 TechnoMorrow. Todos los derechos reservados</small>
-            </footer>
-        </section>
-    </main>
-</body>
-</html>
+            </form><p id="mensaje-reserva" class="aviso" role="status" hidden></p><button type="button" id="cerrar-sesion" class="accion secundaria">Cerrar sesión</button></div></section></main><footer>TechnoMorrow · Prototipo académico · 2026</footer></body></html>

@@ -17,6 +17,41 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Evaluaciones: únicamente perfiles de usuario activos y reservas propias.
+    function reservadorActivo() {
+      return autenticado()
+        && exists(/databases/$(database)/documents/usuario/$(request.auth.uid))
+        && get(/databases/$(database)/documents/usuario/$(request.auth.uid)).data.estado == 'activo'
+        && get(/databases/$(database)/documents/usuario/$(request.auth.uid)).data.rol in ['usuario', 'estudiante', 'docente'];
+    }
+    function propietarioReserva(id) {
+      return reservadorActivo()
+        && exists(/databases/$(database)/documents/reservas/$(id))
+        && get(/databases/$(database)/documents/reservas/$(id)).data.id_usuario == request.auth.uid;
+    }
+    function reservaFinalizada(id) {
+      return propietarioReserva(id)
+        && get(/databases/$(database)/documents/reservas/$(id)).data.estado == 'finalizada'
+        && get(/databases/$(database)/documents/reservas/$(id)).data.fecha_hora_fin is timestamp
+        && request.time >= get(/databases/$(database)/documents/reservas/$(id)).data.fecha_hora_fin;
+    }
+    match /reservas/{id} {
+      // El estudiante solo puede recuperar un documento propio por ID, no listar reservas.
+      allow get: if reservadorActivo() && resource.data.id_usuario == request.auth.uid;
+      allow create, update, delete: if false;
+    }
+    match /satisfaccion/{id} {
+      // Consultar si la evaluación propia ya existe (incluido un documento aún inexistente).
+      allow get: if propietarioReserva(id);
+      allow create: if reservaFinalizada(id)
+        && request.resource.data.keys().hasAll(['calificacion','comentario'])
+        && request.resource.data.keys().hasOnly(['calificacion','comentario'])
+        && request.resource.data.calificacion in [0.5,1,1.5,2,2.5,3,3.5,4,4.5,5]
+        && request.resource.data.comentario is string
+        && request.resource.data.comentario.size() <= 500;
+      allow update, delete: if false;
+    }
+
     // Por ahora: el administrador puede leer datos para el futuro panel.
     // El frontend no puede cambiar ni reservas ni el estado de los relés.
     match /{documento=**} {
@@ -25,3 +60,4 @@ service cloud.firestore {
     }
   }
 }
+

@@ -159,9 +159,15 @@
     const labs=$('#filter-lab').value?array('laboratorio_informatica').filter(l=>l.id_laboratorio===$('#filter-lab').value):array('laboratorio_informatica');
     return {labels:labs.map(l=>l.numero),values:labs.map(l=>records.filter(r=>tm.get(String(r.id_totem))?.id_laboratorio===l.id_laboratorio).length)};
   }
+  // Admite enteros y medias estrellas entre 0,5 y 5 (incluye los datos antiguos).
+  const calificacionValida = r => Number.isFinite(r) && r >= 0.5 && r <= 5 && Number.isInteger(r * 2);
+  function estrellasExactas(n){
+    if (!Number.isFinite(n) || n < 0 || n > 5) return '—';
+    return `<span class="rating-stars-exact" role="img" aria-label="${esc(number(n))} de 5 estrellas">${Array.from({length:5},(_,i)=>`<span aria-hidden="true" class="rating-glyph" style="--filled:${Math.max(0,Math.min(100,(n-i)*100))}%">★</span>`).join('')}</span>`;
+  }
   function renderOverview(records){
     const devices=selectedTotems(),good=devices.filter(t=>['operativo','disponible'].includes(String(t.estado_operativo).toLowerCase())).length;
-    const ratings=array('satisfaccion').map(r=>Number(r.calificacion)).filter(r=>Number.isFinite(r)&&r>=1&&r<=5);
+    const ratings=array('satisfaccion').map(r=>Number(r.calificacion)).filter(calificacionValida);
     const sat=ratings.length?(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1).replace('.',',')+'/5':'—';
     setText('#kpi-reservas',number(records.length));setText('#kpi-tiempo',timeText(minuteSum(records)));
     setText('#kpi-totems',`${good}/${devices.length}`);setText('#kpi-satisfaccion',sat);
@@ -195,15 +201,15 @@
     setHTML('#chart-device-status',totems.length?totems.map(t=>{const st=String(t.estado_operativo||'sin dato').toLowerCase(),cls=['operativo','disponible'].includes(st)?'':st==='mantenimiento'?'warn':'error';return `<div class="device-item"><div class="device-id"><svg class="ic"><use href="#ic-plug"></use></svg><span><strong>${esc(t.codigo)}</strong><small>${esc(labs.get(String(t.id_laboratorio))?.numero||t.id_laboratorio)}</small></span></div><span class="state-pill ${cls}">${esc(t.estado_operativo)}</span></div>`;}).join(''):empty());
   }
   function renderSatisfaction(){
-    const ratings=array('satisfaccion').map(o=>Number(o.calificacion)).filter(r=>Number.isInteger(r)&&r>=1&&r<=5);
+    const ratings=array('satisfaccion').map(o=>Number(o.calificacion)).filter(calificacionValida);
     if(!ratings.length){setText('#sat-score','—');setText('#sat-total','0 evaluaciones');setText('#sat-stars','');setHTML('#chart-ratings',empty('No hay evaluaciones registradas.'));setHTML('#sat-comments',empty());return;}
     const avg=ratings.reduce((a,b)=>a+b,0)/ratings.length;
     setText('#sat-score',avg.toFixed(1).replace('.',',')+'/5');setText('#sat-total',`${ratings.length} evaluaciones en total`);
-    setText('#sat-stars','★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg)));
-    const hist=[5,4,3,2,1].map(star=>({star,total:ratings.filter(r=>r===star).length}));
-    setHTML('#chart-ratings',hist.map(r=>`<div class="rating-row"><span class="star-label">${r.star} ★</span><div class="rating-track"><div class="rating-fill" style="width:${100*r.total/ratings.length}%"></div></div><strong>${r.total}</strong></div>`).join(''));
+    setHTML('#sat-stars',estrellasExactas(avg));
+    const hist=[5,4.5,4,3.5,3,2.5,2,1.5,1,0.5].map(star=>({star,total:ratings.filter(r=>r===star).length}));
+    setHTML('#chart-ratings',hist.map(r=>`<div class="rating-row"><span class="star-label">${number(r.star)} ★</span><div class="rating-track"><div class="rating-fill" style="width:${100*r.total/ratings.length}%"></div></div><strong>${r.total}</strong></div>`).join(''));
     const comments=array('satisfaccion').filter(r=>String(r.comentario||'').trim()).slice(0,6);
-    setHTML('#sat-comments',comments.length?comments.map(r=>`<article class="comment"><span class="comment-rating">${'★'.repeat(Math.min(5,Math.max(0,Number(r.calificacion)||0)))}</span><p>“${esc(r.comentario)}”</p></article>`).join(''):empty('No hay comentarios registrados.'));
+    setHTML('#sat-comments',comments.length?comments.map(r=>`<article class="comment"><span class="comment-rating">${estrellasExactas(Number(r.calificacion))} ${esc(number(Number(r.calificacion)))}/5</span><p>“${esc(r.comentario)}”</p></article>`).join(''):empty('No hay comentarios registrados.'));
   }
   function renderPrediction(records){
     if(!records.length){setHTML('#chart-prediction',empty('Sin historial no es posible mostrar una proyección.'));setHTML('#prediction-rows',empty());return;}

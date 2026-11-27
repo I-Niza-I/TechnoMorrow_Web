@@ -30,6 +30,8 @@ if (db) {
 export const ahoraServidor = () =>
   Date.now() + (desfase ?? 0);
 
+export const conexionLista = () => conectado && typeof desfase === 'number';
+
 export const codigoPermitido = codigo =>
   codigos.includes(codigo);
 
@@ -53,7 +55,7 @@ export function observarTotem(codigo, recibir, error) {
 }
 
 
-export async function solicitarReserva(codigo, segundos) {
+export async function solicitarReserva(codigo, segundos, opciones = {}) {
 
   if (
     !db ||
@@ -83,9 +85,14 @@ export async function solicitarReserva(codigo, segundos) {
 
   }
 
-  const id = crypto.randomUUID();
+  const id = opciones.id ?? crypto.randomUUID();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) {
+    throw new Error('Identificador de solicitud inválido.');
+  }
 
   const vence = ahoraServidor() + 30000;
+  // Guardar el plazo real antes de iniciar la escritura, para sobrevivir a una recarga.
+  opciones.alPreparar?.({ id, uid, codigo, segundos, vence });
 
 
   // NUEVO:
@@ -111,7 +118,7 @@ export async function solicitarReserva(codigo, segundos) {
     actual => {
 
       if (
-        !conectado ||
+        !conectado || auth?.currentUser?.uid !== uid ||
         actual?.estado !== 'libre' ||
         ahoraServidor() >= vence - 5000
       ) {
