@@ -29,11 +29,11 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/reservas/$(id))
         && get(/databases/$(database)/documents/reservas/$(id)).data.id_usuario == request.auth.uid;
     }
-    function reservaFinalizada(id) {
+    function reservaAutorizada(id) {
       return propietarioReserva(id)
-        && get(/databases/$(database)/documents/reservas/$(id)).data.estado == 'finalizada'
-        && get(/databases/$(database)/documents/reservas/$(id)).data.fecha_hora_fin is timestamp
-        && request.time >= get(/databases/$(database)/documents/reservas/$(id)).data.fecha_hora_fin;
+        && get(/databases/$(database)/documents/reservas/$(id)).data.estado in ['activa','finalizada']
+        && get(/databases/$(database)/documents/reservas/$(id)).data.fecha_hora_inicio is timestamp
+        && get(/databases/$(database)/documents/reservas/$(id)).data.fecha_hora_fin is timestamp;
     }
     match /reservas/{id} {
       // El estudiante solo puede recuperar un documento propio por ID, no listar reservas.
@@ -43,7 +43,7 @@ service cloud.firestore {
     match /satisfaccion/{id} {
       // Consultar si la evaluación propia ya existe (incluido un documento aún inexistente).
       allow get: if propietarioReserva(id);
-      allow create: if reservaFinalizada(id)
+      allow create: if reservaAutorizada(id)
         && request.resource.data.keys().hasAll(['calificacion','comentario'])
         && request.resource.data.keys().hasOnly(['calificacion','comentario'])
         && request.resource.data.calificacion in [0.5,1,1.5,2,2.5,3,3.5,4,4.5,5]
@@ -60,4 +60,3 @@ service cloud.firestore {
     }
   }
 }
-

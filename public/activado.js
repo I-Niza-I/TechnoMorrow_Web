@@ -25,8 +25,8 @@ function confirmarFin(fin){
 function actualizarConfirmada(){
   const termino=ahoraServidor()>=r.fin;
   $('mensaje-confirmada').textContent=termino?'El plazo autorizado ya terminó.':'El tótem autorizó tu reserva. Ya puedes utilizar el enchufe.';
-  $('nota-evaluacion').textContent=termino?'Puedes evaluar el servicio. Se comprobará la finalización en Firestore.':'Podrás evaluar el servicio al finalizar el tiempo reservado.';
-  $('evaluar').disabled=!termino;
+  $('nota-evaluacion').textContent='Ya puedes evaluar tu experiencia. La reserva continuará hasta la hora indicada. Después del fin, tu cuenta tendrá 2 minutos de espera.';
+  $('evaluar').disabled=false;
 }
 async function consultarHistorial(){
   if(!activoUI || autorizada || consultaEnCurso || !fs || !r || auth.currentUser?.uid!==r.uid) return;
@@ -79,13 +79,13 @@ async function iniciarSolicitud(){
     if(!autorizada) guardar({fase:'enviada'});
   }catch(e){
     console.error('Solicitud:',e);
-    if(!autorizada){errorEnvio=e.code==='PERMISSION_DENIED'||e.code==='permission-denied'?'No se pudo registrar la solicitud: tótem ocupado, permisos insuficientes o plazo vencido.':(e.message||'No se pudo confirmar el envío.');
+    if(!autorizada){errorEnvio=e.code==='PERMISSION_DENIED'||e.code==='permission-denied'?'No se pudo registrar la solicitud: tótem ocupado, período de espera vigente, permisos insuficientes o plazo vencido.':(e.message||'No se pudo confirmar el envío.');
       try { guardar({fase:'fallida',motivo:errorEnvio}); }catch{};
     }
   } finally{actualizar();}
 }
 function detener(){activoUI=false;desuscribir?.();desuscribir=null;clearInterval(timer);timer=null;}
-$('evaluar').addEventListener('click',()=>{if(autorizada && ahoraServidor()>=r.fin && auth?.currentUser?.uid===r.uid) location.assign(urlReserva('satisfaccion.html',r.id));});
+$('evaluar').addEventListener('click',()=>{if(autorizada && auth?.currentUser?.uid===r.uid) location.assign(urlReserva('satisfaccion.html',r.id));});
 $('comprobar').addEventListener('click',()=>{actualizar();consultarHistorial();});
 if(!firebaseConfigurado || !auth || !r || !codigoPermitido(r.codigo) || !segundosValidos(r.segundos)) $('verificando').textContent='No se encontró una solicitud válida en esta pestaña. Regresa al inicio para reservar.';
 else onAuthStateChanged(auth,async usuario=>{

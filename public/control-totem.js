@@ -4,7 +4,8 @@ import {
   getDatabase,
   ref,
   onValue,
-  runTransaction,
+  update,
+  get,
   set
 } from 'https://www.gstatic.com/firebasejs/13.4.0/firebase-database.js';
 
@@ -109,43 +110,44 @@ export async function solicitarReserva(codigo, segundos, opciones = {}) {
   );
 
 
-  // Solicitar reserva mediante una transacción.
-
-  const resultado = await runTransaction(
-
-    ref(db, `control/${codigo}`),
-
-    actual => {
-
-      if (
-        !conectado || auth?.currentUser?.uid !== uid ||
-        actual?.estado !== 'libre' ||
-        ahoraServidor() >= vence - 5000
-      ) {
-        return;
-      }
-
-      return {
-        estado: 'pendiente',
-        id,
-        segundos,
-        vence
-      };
-
-    },
-
-    { applyLocally: false }
-
-  );
-
-  if (!resultado.committed) {
-
-    throw new Error(
-      'Tótem ocupado, sin datos o solicitud caducada.'
-    );
-
+  // Una única escritura atómica: el servidor valida el tótem y el UID.
+  // Se reserva el margen máximo hasta que el backend observe la autorización.
+  if (!conexionLista() || auth?.currentUser?.uid !== uid || ahoraServidor() >= vence - 5000) {
+    throw new Error('La conexión o el plazo de la solicitud cambió. Inténtalo nuevamente.');
   }
-
+  try {
+    await update(ref(db), {
+      [`control/${codigo}`]: { estado: 'pendiente', id, segundos, vence },
+      [`bloqueos/${uid}`]: { id, codigo, fase: 'provisional', hasta: vence + segundos * 1000 + 121000 }
+    });
+  } catch (e) {
+    // Informar conflicto de cuenta, sin revelar bloqueos de otros usuarios.
+    if (auth?.currentUser?.uid === uid && conexionLista()) {
+      try {
+        const b = (await get(ref(db, `bloqueos/${uid}`))).val();
+        const anterior = b && codigoPermitido(b.codigo) ? (await get(ref(db, `control/${b.codigo}`))).val() : null;
+        if (b?.id !== id && bloqueoVigente(b, anterior, ahoraServidor())) {
+          const error = new Error('Tu cuenta tiene una reserva o un período de espera vigente. Vuelve a la página de duración para consultar el tiempo restante.');
+          error.code = 'bloqueo-vigente';
+          throw error;
+        }
+      } catch (diagnostico) { if (diagnostico.code === 'bloqueo-vigente') throw diagnostico; }
+    }
+    throw e;
+  }
   return id;
+}
 
+// Solo el titular puede consultar su bloqueo. El reloj del servidor es orientativo
+// en la interfaz; las reglas de RTDB utilizan now y son la autoridad definitiva.
+export function observarBloqueo(uid, recibir, error) {
+  if (!db || !uid || auth?.currentUser?.uid !== uid) throw new Error('Sesión inválida.');
+  return onValue(ref(db, `bloqueos/${uid}`), s => recibir(s.val()), error);
+}
+export function bloqueoVigente(b, anterior, ahora) {
+  if (!b) return false;
+  if (!Number.isSafeInteger(b.hasta)) return true;
+  if (b.hasta <= ahora) return false;
+  // Si la solicitud sigue pendiente y ya venció, no puede autorizarse.
+  return !(b.fase === 'provisional' && anterior?.id === b.id && anterior.estado === 'pendiente' && anterior.vence <= ahora);
 }

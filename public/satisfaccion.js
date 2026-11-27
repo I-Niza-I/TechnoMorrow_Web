@@ -32,9 +32,9 @@ async function comprobar(){
     const reserva=await getDocFromServer(doc(fs,'reservas',id));
     if(actual!==revision||auth.currentUser?.uid!==propietario)return;
     const datos=reserva.data();
-    if(!reserva.exists() || datos.id_usuario!==propietario){mensaje('No se encontró una reserva propia verificable.',true);return;}
-    if(['cancelada','indeterminada'].includes(datos.estado)){noEvaluable=true;clearInterval(reloj);mensaje('No existe una finalización verificable para esta reserva. No se puede evaluarla.',true);$('revisar-encuesta').hidden=true;return;}
-    if(datos.estado!=='finalizada' || !datos.fecha_hora_fin?.toMillis){mensaje('Esperando que el backend registre la finalización de la reserva. No se ha guardado ninguna evaluación.');return;}
+    if(!reserva.exists() || datos.id_usuario!==propietario){mensaje('Esperando el registro de una reserva propia autorizada…',true);return;}
+    if(['cancelada','indeterminada'].includes(datos.estado)){noEvaluable=true;clearInterval(reloj);mensaje('No existe una autorización verificable para esta reserva. No se puede evaluarla.',true);$('revisar-encuesta').hidden=true;return;}
+    if(!['activa','finalizada'].includes(datos.estado) || !datos.fecha_hora_inicio?.toMillis || !datos.fecha_hora_fin?.toMillis){mensaje('Esperando que el backend registre la autorización de la reserva. No es necesario esperar al fin de la carga.');return;}
     const encuesta=await getDocFromServer(doc(fs,'satisfaccion',id));
     if(actual!==revision||auth.currentUser?.uid!==propietario)return;
     if(encuesta.exists()){mostrarGracias();return;}

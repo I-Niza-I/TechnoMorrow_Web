@@ -39,6 +39,19 @@ async function procesar(codigo, actual, observado) {
       return;
     }
   }
+  // El bloqueo inicial ya se creó atómicamente en RTDB; este ajuste no
+  // participa en el control del relé. Nunca se modifica un ID posterior.
+  if (actual.estado === 'activo') {
+    const hasta = actual.vence + 120000;
+    await rtdb.ref(`bloqueos/${meta.uid}`).transaction(b => {
+      // Una transacción puede iniciar con caché vacía; devolver null permite
+      // que el servidor reintente si realmente existe un registro.
+      if (b === null) return null;
+      if (!b || b.id !== actual.id || b.codigo !== codigo || b.fase !== 'provisional') return;
+      if (!Number.isSafeInteger(b.hasta) || hasta > b.hasta) return;
+      return { ...b, fase: 'confirmado', hasta };
+    });
+  }
   await fs.runTransaction(async tx => {
     const td = await tx.get(t);
     if (!td.exists) throw new Error(`Falta totems/${idTotem} en Firestore`);
